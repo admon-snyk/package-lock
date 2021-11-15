@@ -52,7 +52,7 @@ function readPackageJsonSync (dirname) {
 
 function findPackages (dirname, cb) {
   const modules = nodeModulesDir(dirname)
-  glob(`${modules}/**/package.json`, cb)
+  glob(`${modules}/**/package.json`, {follow: true}, cb) // This will follow symlinks
 }
 
 function extract (path, cb) {
@@ -60,7 +60,7 @@ function extract (path, cb) {
     let obj = null
     if (!err && pckg) {
       obj = Object.assign(
-        _pick(pckg, ['name', 'version', '_id', '_integrity', '_resolved', '_shasum', '_spec']),
+        _pick(pckg, ['name', 'version', '_id', '_integrity', '_resolved', '_shasum', '_spec', 'dependencies']),
         { path }
       )
       if (!obj._id) {
@@ -68,6 +68,11 @@ function extract (path, cb) {
       }
       if (!obj._spec) {
         obj._spec = `${obj.name}@^${obj.version}`
+      }
+      // this will put the original dependencies as a __requires for later use (we can't use the 'dependencies' property as it's already in use)
+      if (obj.dependencies) {
+        obj.__requires = obj.dependencies;
+        delete obj.dependencies;
       }
     }
     cb(err, obj)

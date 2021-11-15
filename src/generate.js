@@ -44,19 +44,12 @@ function genPackageLock (tree, pckg, options) {
       }
     }
     */
+    if (o.__requires && Object.keys(o.__requires).length > 0) t.requires = o.__requires
     if (o[DEPS]) {
-      t.requires = {}
       Object.keys(o[DEPS]).sort().forEach((k) => {
-        const { name, version } = o[DEPS][k]
-        if (k === name) {
-          t.requires[name] = version
-        }
-      })
-      Object.keys(o[DEPS]).sort().forEach((k) => {
-        if (o[DEPS][k][DEPS]) {
           if (!t.dependencies) t.dependencies = {}
           t.dependencies[k] = convert(o[DEPS][k], level, opts)
-        }
+          if (!Object.keys(t.dependencies).length) delete t.dependencies
       })
     } else {
       Object.keys(o).sort().forEach((k) => {
